@@ -1,10 +1,10 @@
-const { loadSavedCredentialsIfExist } = require("./utils/loadSavedCredentialsIfExist");
+const loadSavedCredentialsIfExist = require("./utils/loadSavedCredentialsIfExist");
 const { authenticate } = require("@google-cloud/local-auth");
 const { google } = require("googleapis");
-const { saveCredentials } = require("./utils/saveCredentials");
+const saveCredentials = require("./utils/saveCredentials");
 const path = require("path");
 const fs = require("fs");
-const { config } = require("./config");
+const config = require("./config");
 
 const ICAL = require("ical.js");
 
@@ -59,9 +59,12 @@ class BDaySync {
     }
 
     async init() {
+	console.log("Starting...");
         this.client = loadSavedCredentialsIfExist(this.credentialsPath);
 
         if (this.client == null) {
+	    console.log("Refreshing client");
+
             this.client = await authenticate({
                 scopes: SCOPES,
                 keyfilePath: this.credentialsPath
@@ -70,6 +73,8 @@ class BDaySync {
             if (this.client.credentials)
                 saveCredentials(this);
         }
+
+	console.log("Client created");
 
         this.service = google.people({ version: "v1", auth: this.client });
 

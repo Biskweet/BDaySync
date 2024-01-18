@@ -24,7 +24,7 @@ app.get("/bdaysync", (req, res) => {
     res.send(sync.getBirthdays());
 });
 
-// sync.init().then(() => {
+sync.init().then(() => {
 
     // const httpsServer = https.createServer({
     //     cert: certificate,
@@ -33,4 +33,4 @@ app.get("/bdaysync", (req, res) => {
     //
     // httpsServer.listen(config.PORT, () => console.log(`Running api on https://${ config.HOST }:${ config.PORT }/`));
     app.listen(config.PORT, () => console.log(`Running api on http://${ config.HOST }:${ config.PORT }/`));
-// });
+});
