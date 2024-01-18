@@ -63,7 +63,7 @@ class BDaySync {
         this.client = loadSavedCredentialsIfExist(this.credentialsPath);
 
         if (this.client == null) {
-	    console.log("Refreshing client");
+	        console.log("Refreshing client");
 
             this.client = await authenticate({
                 scopes: SCOPES,

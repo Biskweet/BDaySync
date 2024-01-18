@@ -7,6 +7,7 @@ module.exports = (credentialsPath) => {
         const parsedCredentials = JSON.parse(content);
         return google.auth.fromJSON(parsedCredentials);
     } catch (err) {
+        console.error(`Err: ${err}`);
         return null;
     }
 }
