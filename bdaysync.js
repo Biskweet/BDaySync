@@ -1,10 +1,10 @@
-import { loadSavedCredentialsIfExist } from "./utils/loadSavedCredentialsIfExist";
-import { authenticate } from "@google-cloud/local-auth";
-import { google } from "googleapis";
-import { saveCredentials } from "./utils/saveCredentials";
-import * as path from "path";
-import * as fs from "fs";
-import { config } from "./config";
+const { loadSavedCredentialsIfExist } = require("./utils/loadSavedCredentialsIfExist");
+const { authenticate } = require("@google-cloud/local-auth");
+const { google } = require("googleapis");
+const { saveCredentials } = require("./utils/saveCredentials");
+const path = require("path");
+const fs = require("fs");
+const { config } = require("./config");
 
 const ICAL = require("ical.js");
 
@@ -115,4 +115,4 @@ class BDaySync {
     }
 }
 
-export { BDaySync };
+module.exports = BDaySync;

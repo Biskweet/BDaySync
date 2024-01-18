@@ -1,10 +1,10 @@
-import cors from "cors";
-import express from "express";
-import { config } from "config";
-import { BDaySync } from "./bdaysync";
-import { configDotenv } from "dotenv";
-// import * as https from "https";
-// import * as fs from "fs";
+const cors = require("cors");
+const express = require("express");
+const config = require("./config");
+const BDaySync = require("./bdaysync");
+const { configDotenv } = require("dotenv");
+// const * as https = require("https";
+// const * as fs = require("fs";
 
 
 configDotenv();
@@ -24,13 +24,13 @@ app.get("/bdaysync", (req, res) => {
     res.send(sync.getBirthdays());
 });
 
-sync.init().then(() => {
+// sync.init().then(() => {
 
     // const httpsServer = https.createServer({
     //     cert: certificate,
-	//     key: privateKey,
+    //     key: privateKey,
     // }, app);
     //
     // httpsServer.listen(config.PORT, () => console.log(`Running api on https://${ config.HOST }:${ config.PORT }/`));
     app.listen(config.PORT, () => console.log(`Running api on http://${ config.HOST }:${ config.PORT }/`));
-});
+// });

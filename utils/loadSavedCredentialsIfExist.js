@@ -1,7 +1,7 @@
-import * as fs from "fs";
-import { google } from "googleapis";
+const fs = require("fs");
+const { google } = require("googleapis");
 
-const loadSavedCredentialsIfExist = (credentialsPath) => {
+module.exports = (credentialsPath) => {
     try {
         const content = fs.readFileSync(credentialsPath, { encoding: "utf8" });
         const parsedCredentials = JSON.parse(content);
@@ -10,5 +10,3 @@ const loadSavedCredentialsIfExist = (credentialsPath) => {
         return null;
     }
 }
-
-export { loadSavedCredentialsIfExist };

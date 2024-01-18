@@ -1,7 +1,7 @@
-import * as fs from "fs";
+const fs = require("fs");
 
 
-const saveCredentials = (syncer) => {
+module.exports = (syncer) => {
     const content = fs.readFileSync(syncer.credentialsPath, { encoding: "utf8" });
     const keys = JSON.parse(content);
     const key = keys.installed || keys.web;
@@ -15,5 +15,3 @@ const saveCredentials = (syncer) => {
 
     fs.writeFileSync(syncer.tokenPath, payload);
 }
-
-export { saveCredentials };
