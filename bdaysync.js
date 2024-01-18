@@ -3,16 +3,51 @@ import { authenticate } from "@google-cloud/local-auth";
 import { google } from "googleapis";
 import { saveCredentials } from "./utils/saveCredentials";
 import * as path from "path";
+import * as fs from "fs";
+import { config } from "./config";
+
+const ICAL = require("ical.js");
+
 
 const defaultCalendarPath = path.join(process.cwd(), "bdcal.ics");
 const defaultCredentialsPath = path.join(process.cwd(), "credentials.json");
 const defaultTokenPath = path.join(process.cwd(), "token.json");
 
-
 const SCOPES = [ 'https://www.googleapis.com/auth/contacts.readonly' ];
 
 
 class BDaySync {
+    static contactToEvent(contact) {
+        let name = '';
+        const givenName = contact.names[0].givenName;
+        const familyName = contact.names[0].familyName;
+        if (givenName)
+            name = givenName;
+        if (familyName) {
+            if (name.length > 0)
+                name += ' '
+            name += familyName;
+        }
+
+        let event = new ICAL.Component("vevent");
+
+        event.addPropertyWithValue("summary", `Birthday: ${name}`);
+
+        event.addPropertyWithValue("dtstart", new ICAL.Time({
+            year: contact.birthdays[0].date.year || 1970,
+            month: contact.birthdays[0].date.month,
+            day: contact.birthdays[0].date.day
+        }));
+
+        event.addPropertyWithValue("rrule", new ICAL.Recur({
+            freq: "yearly",
+            bymonth: contact.birthdays[0].date.month,
+            bymonthday: contact.birthdays[0].date.day
+        }));
+
+        return event;
+    }
+
     constructor(calendarPath, credentialsPath, tokenPath) {
         /**
          * Reminder: all paths must be absolute!
@@ -20,7 +55,7 @@ class BDaySync {
 
         this.calendarPath = calendarPath || defaultCalendarPath;
         this.credentialsPath = credentialsPath || defaultCredentialsPath;
-        this.tokenPath = tokenPath || defaultCredentialsPath;
+        this.tokenPath = tokenPath || defaultTokenPath;
     }
 
     async init() {
@@ -37,6 +72,19 @@ class BDaySync {
         }
 
         this.service = google.people({ version: "v1", auth: this.client });
+
+        if (fs.existsSync(this.calendarPath) === false)
+            this.refreshDatabase();
+
+        setInterval(this.refreshDatabase, config.databaseUpdateDelay);
+    }
+
+    refreshDatabase() {
+        this.contactsToCal().then((calendar) => {
+            const calStr = calendar.toString();
+
+            fs.writeFileSync(this.calendarPath, calStr, { encoding: "utf8" });
+        });
     }
 
     async listContacts() {
@@ -47,6 +95,23 @@ class BDaySync {
         });
 
         return res.data.connections;
+    }
+
+    async contactsToCal() {
+        const contacts = await this.listContacts();
+        const contactsWithBirthday = contacts.filter(contact => contact.birthdays !== undefined);
+
+        const calendar = new ICAL.Component("vcalendar");
+        contactsWithBirthday.forEach((contact) => {
+            const birthday = BDaySync.contactToEvent(contact);
+            calendar.addSubcomponent(birthday);
+        });
+
+        return calendar;
+    }
+
+    getBirthdays() {
+        return fs.readFileSync(this.calendarPath, { encoding: "utf8" });
     }
 }
 

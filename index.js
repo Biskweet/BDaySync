@@ -1,30 +1,36 @@
-const path = require('path');
-const process = require('process');
-
-
 import cors from "cors";
 import express from "express";
-import * as https from "https";
-import * as fs from "fs";
-
 import { config } from "config";
-import { DatabaseIndexer } from "~~/databaseindexer";
-import { BDaySyncController } from "~~/controllers/bdaysync.controller";
+import { BDaySync } from "./bdaysync";
+import { configDotenv } from "dotenv";
+// import * as https from "https";
+// import * as fs from "fs";
+
+
+configDotenv();
+
+const sync = new BDaySync();
 
 const app = express();
 app.use(cors());
 
-app.use("/bdaysync", MasterCalAPIController);
+// const certificate = fs.readFileSync("/etc/letsencrypt/live/mastercal.xyz/fullchain.pem");
+// const privateKey = fs.readFileSync("/etc/letsencrypt/live/mastercal.xyz/privkey.pem");
 
-const certificate = fs.readFileSync("/etc/letsencrypt/live/mastercal.xyz/fullchain.pem");
-const privateKey = fs.readFileSync("/etc/letsencrypt/live/mastercal.xyz/privkey.pem");
+app.get("/bdaysync", (req, res) => {
+    if (req.query.token !== process.env.BDSYNC_TOKEN)
+        return res.status(403) && res.send("Invalid token");
 
-DatabaseIndexer.init().then(() => {
+    res.send(sync.getBirthdays());
+});
 
-    const httpsServer = https.createServer({
-        cert: certificate,
-	    key: privateKey,
-    }, app);
+sync.init().then(() => {
 
-    httpsServer.listen(config.PORT, () => console.log(`Running api on https://${ config.HOST }:${ config.PORT }/`));
+    // const httpsServer = https.createServer({
+    //     cert: certificate,
+	//     key: privateKey,
+    // }, app);
+    //
+    // httpsServer.listen(config.PORT, () => console.log(`Running api on https://${ config.HOST }:${ config.PORT }/`));
+    app.listen(config.PORT, () => console.log(`Running api on http://${ config.HOST }:${ config.PORT }/`));
 });
